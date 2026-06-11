@@ -8,13 +8,11 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Mobile Menu Toggle Button (Outside Sidebar) -->
-        <button class="menu-toggle" id="menuToggle">☰</button>
-
         <!-- Sidebar Navigation -->
         <aside class="sidebar-nav">
             <div class="sidebar-header">
                 <h2>📔 Journal</h2>
+                <button class="menu-toggle" id="menuToggle">☰</button>
             </div>
 
             <nav class="nav-menu">
@@ -76,25 +74,12 @@
 
                     <form id="journalForm" class="journal-form">
                         <div class="form-group">
-                            <label for="entryTitle">Entry Title</label>
+                            <label for="entryDate">Entry Date</label>
                             <input 
-                                type="text" 
-                                id="entryTitle" 
-                                placeholder="Give your entry a title..." 
+                                type="date" 
+                                id="entryDate" 
                                 required
                             >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="entryMood">How are you feeling?</label>
-                            <select id="entryMood">
-                                <option value="happy">😊 Happy</option>
-                                <option value="sad">😢 Sad</option>
-                                <option value="anxious">😰 Anxious</option>
-                                <option value="excited">🤩 Excited</option>
-                                <option value="neutral">😐 Neutral</option>
-                                <option value="grateful">🙏 Grateful</option>
-                            </select>
                         </div>
 
                         <div class="form-group">
@@ -105,6 +90,15 @@
                                 rows="10"
                                 required
                             ></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="entryTags">Tags (comma-separated)</label>
+                            <input 
+                                type="text" 
+                                id="entryTags" 
+                                placeholder="e.g. work, personal, important" 
+                            >
                         </div>
 
                         <button type="submit" class="btn btn-primary">Save Entry</button>
@@ -165,16 +159,11 @@
                             </div>
                         </div>
 
-                        <div class="mood-analytics">
-                            <h3>Mood Distribution</h3>
-                            <div class="mood-chart" id="moodChart">
+                        <div class="tags-analytics">
+                            <h3>Top Tags</h3>
+                            <div class="tags-list" id="tagsList">
                                 <!-- Will be populated by JavaScript -->
                             </div>
-                        </div>
-
-                        <div class="word-count">
-                            <h3>Total Words Written</h3>
-                            <p class="word-count-number" id="totalWords">0</p>
                         </div>
                     </div>
                 </section>
@@ -273,12 +262,11 @@
         <div class="entry-viewer-content">
             <button class="close-btn" id="closeViewer">&times;</button>
             <article class="entry-display">
-                <h2 id="viewerTitle"></h2>
                 <div class="entry-meta">
-                    <span id="viewerMood"></span>
                     <span id="viewerDate"></span>
                 </div>
                 <p id="viewerContent"></p>
+                <div class="entry-tags" id="viewerTags"></div>
                 <button class="btn btn-danger" id="deleteEntryBtn">Delete Entry</button>
             </article>
         </div>

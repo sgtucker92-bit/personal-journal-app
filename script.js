@@ -1,15 +1,5 @@
 // Journal App - Main JavaScript
 
-// Mood Emoji Map
-const moodEmojis = {
-    happy: '😊',
-    sad: '😢',
-    anxious: '😰',
-    excited: '🤩',
-    neutral: '😐',
-    grateful: '🙏'
-};
-
 // State
 let entries = [];
 let currentEntryId = null;
@@ -17,9 +7,9 @@ let currentCalendarDate = new Date();
 
 // DOM Elements
 const journalForm = document.getElementById('journalForm');
-const entryTitleInput = document.getElementById('entryTitle');
-const entryMoodSelect = document.getElementById('entryMood');
+const entryDateInput = document.getElementById('entryDate');
 const entryContentInput = document.getElementById('entryContent');
+const entryTagsInput = document.getElementById('entryTags');
 const entriesList = document.getElementById('entriesList');
 const searchInput = document.getElementById('searchInput');
 const sortNewestBtn = document.getElementById('sortNewest');
@@ -51,11 +41,18 @@ const importFileName = document.getElementById('importFileName');
 // Initialize App
 function init() {
     loadEntriesFromStorage();
+    setTodayDate();
     renderEntries();
     updateStats();
     attachEventListeners();
     generateCalendar();
     updateTotalEntries();
+}
+
+// Set today's date as default
+function setTodayDate() {
+    const today = new Date().toISOString().split('T')[0];
+    entryDateInput.value = today;
 }
 
 // Event Listeners
@@ -124,19 +121,18 @@ function toggleMobileMenu() {
 function handleAddEntry(e) {
     e.preventDefault();
 
+    const tags = entryTagsInput.value
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+
     const newEntry = {
         id: Date.now(),
-        title: entryTitleInput.value.trim(),
+        date: entryDateInput.value,
         content: entryContentInput.value.trim(),
-        mood: entryMoodSelect.value,
-        date: new Date().toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }),
-        timestamp: new Date().getTime()
+        tags: tags,
+        dateAdded: new Date().getTime(),
+        timestamp: new Date(entryDateInput.value).getTime()
     };
 
     entries.unshift(newEntry);
@@ -148,6 +144,7 @@ function handleAddEntry(e) {
 
     // Clear form
     journalForm.reset();
+    setTodayDate();
 
     // Show success feedback
     showNotification('Entry saved successfully!');
@@ -162,11 +159,21 @@ function renderEntries() {
 
     entriesList.innerHTML = entries.map(entry => `
         <div class="entry-item" onclick="openEntry(${entry.id})">
-            <div class="entry-item-title">${escapeHtml(entry.title)}</div>
-            <div class="entry-item-date">${entry.date}</div>
-            <div class="entry-item-mood">${moodEmojis[entry.mood]}</div>
+            <div class="entry-item-date">${formatDate(entry.date)}</div>
+            <div class="entry-item-preview">${escapeHtml(entry.content.substring(0, 150))}${entry.content.length > 150 ? '...' : ''}</div>
+            ${entry.tags.length > 0 ? `<div class="entry-item-tags">${entry.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
         </div>
     `).join('');
+}
+
+// Format date
+function formatDate(dateString) {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 }
 
 // Search Entries
@@ -179,8 +186,8 @@ function handleSearch(e) {
     }
 
     const filtered = entries.filter(entry =>
-        entry.title.toLowerCase().includes(searchTerm) ||
-        entry.content.toLowerCase().includes(searchTerm)
+        entry.content.toLowerCase().includes(searchTerm) ||
+        entry.tags.some(tag => tag.toLowerCase().includes(searchTerm))
     );
 
     renderFilteredEntries(filtered);
@@ -195,9 +202,9 @@ function renderFilteredEntries(entriesToRender) {
 
     entriesList.innerHTML = entriesToRender.map(entry => `
         <div class="entry-item" onclick="openEntry(${entry.id})">
-            <div class="entry-item-title">${escapeHtml(entry.title)}</div>
-            <div class="entry-item-date">${entry.date}</div>
-            <div class="entry-item-mood">${moodEmojis[entry.mood]}</div>
+            <div class="entry-item-date">${formatDate(entry.date)}</div>
+            <div class="entry-item-preview">${escapeHtml(entry.content.substring(0, 150))}${entry.content.length > 150 ? '...' : ''}</div>
+            ${entry.tags.length > 0 ? `<div class="entry-item-tags">${entry.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
         </div>
     `).join('');
 }
@@ -205,9 +212,9 @@ function renderFilteredEntries(entriesToRender) {
 // Sort Entries
 function handleSort(order) {
     if (order === 'newest') {
-        entries.sort((a, b) => b.timestamp - a.timestamp);
+        entries.sort((a, b) => b.dateAdded - a.dateAdded);
     } else if (order === 'oldest') {
-        entries.sort((a, b) => a.timestamp - b.timestamp);
+        entries.sort((a, b) => a.dateAdded - b.dateAdded);
     }
     renderEntries();
     saveEntriesToStorage();
@@ -221,10 +228,13 @@ function openEntry(id) {
 
     if (!entry) return;
 
-    document.getElementById('viewerTitle').textContent = entry.title;
-    document.getElementById('viewerMood').innerHTML = `<span>${moodEmojis[entry.mood]} ${entry.mood.charAt(0).toUpperCase() + entry.mood.slice(1)}</span>`;
-    document.getElementById('viewerDate').textContent = entry.date;
+    document.getElementById('viewerDate').textContent = formatDate(entry.date);
     document.getElementById('viewerContent').textContent = entry.content;
+    
+    const tagsHtml = entry.tags.length > 0 
+        ? entry.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')
+        : '';
+    document.getElementById('viewerTags').innerHTML = tagsHtml;
 
     entryViewer.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -278,26 +288,23 @@ function updateStats() {
     const currentMonth = now.getMonth();
     const currentWeek = getWeekNumber(now);
 
-    const thisYear = entries.filter(e => new Date(e.timestamp).getFullYear() === currentYear).length;
+    const thisYear = entries.filter(e => new Date(e.date).getFullYear() === currentYear).length;
     const thisMonth = entries.filter(e => {
-        const d = new Date(e.timestamp);
+        const d = new Date(e.date);
         return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
     }).length;
     const thisWeek = entries.filter(e => {
-        const d = new Date(e.timestamp);
+        const d = new Date(e.date);
         return getWeekNumber(d) === currentWeek && d.getFullYear() === currentYear;
     }).length;
-
-    const totalWords = entries.reduce((sum, e) => sum + e.content.split(/\s+/).length, 0);
 
     document.getElementById('statTotalEntries').textContent = entries.length;
     document.getElementById('statThisMonth').textContent = thisMonth;
     document.getElementById('statThisWeek').textContent = thisWeek;
     document.getElementById('statThisYear').textContent = thisYear;
-    document.getElementById('totalWords').textContent = totalWords.toLocaleString();
 
-    // Update mood distribution
-    updateMoodChart();
+    // Update tags analytics
+    updateTagsAnalytics();
 }
 
 // Get Week Number
@@ -309,26 +316,31 @@ function getWeekNumber(date) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
-// Update Mood Chart
-function updateMoodChart() {
-    const moodCounts = {
-        happy: 0,
-        sad: 0,
-        anxious: 0,
-        excited: 0,
-        neutral: 0,
-        grateful: 0
-    };
+// Update Tags Analytics
+function updateTagsAnalytics() {
+    const tagCounts = {};
 
-    entries.forEach(e => {
-        moodCounts[e.mood]++;
+    entries.forEach(entry => {
+        entry.tags.forEach(tag => {
+            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        });
     });
 
-    const chart = document.getElementById('moodChart');
-    chart.innerHTML = Object.entries(moodCounts).map(([mood, count]) => `
-        <div class="mood-bar">
-            <div class="mood-bar-label">${moodEmojis[mood]} ${mood.charAt(0).toUpperCase() + mood.slice(1)}</div>
-            <div class="mood-bar-value">${count}</div>
+    const tagsArray = Object.entries(tagCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+    const tagsList = document.getElementById('tagsList');
+
+    if (tagsArray.length === 0) {
+        tagsList.innerHTML = '<p class="no-tags">No tags yet. Add tags to your entries!</p>';
+        return;
+    }
+
+    tagsList.innerHTML = tagsArray.map(([tag, count]) => `
+        <div class="tag-item">
+            ${escapeHtml(tag)}
+            <span class="tag-count">${count}</span>
         </div>
     `).join('');
 }
@@ -353,15 +365,9 @@ function generateCalendar() {
 
     // Current month days
     for (let i = 1; i <= lastDate; i++) {
-        const date = new Date(year, month, i);
-        const hasEntry = entries.some(e => {
-            const entryDate = new Date(e.timestamp);
-            return entryDate.getFullYear() === year &&
-                entryDate.getMonth() === month &&
-                entryDate.getDate() === i;
-        });
-
-        const isToday = date.toDateString() === new Date().toDateString();
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        const hasEntry = entries.some(e => e.date === dateString);
+        const isToday = new Date(dateString).toDateString() === new Date().toDateString();
 
         let className = 'calendar-date';
         if (hasEntry) className += ' has-entry';
@@ -399,10 +405,11 @@ function handleExport() {
 }
 
 function handleExportCSV() {
-    let csv = 'Title,Mood,Date,Content\n';
+    let csv = 'Date,Content,Tags\n';
     entries.forEach(entry => {
         const content = entry.content.replace(/"/g, '""').replace(/\n/g, ' ');
-        csv += `"${entry.title}","${entry.mood}","${entry.date}","${content}"\n`;
+        const tags = entry.tags.join('; ');
+        csv += `"${entry.date}","${content}","${tags}"\n`;
     });
 
     const dataBlob = new Blob([csv], { type: 'text/csv' });
@@ -432,7 +439,7 @@ function handleImport(e) {
 
             if (confirm(`Import ${imported.length} entries? This will add to your existing entries.`)) {
                 entries = [...entries, ...imported];
-                entries.sort((a, b) => b.timestamp - a.timestamp);
+                entries.sort((a, b) => b.dateAdded - a.dateAdded);
                 saveEntriesToStorage();
                 renderEntries();
                 updateStats();
