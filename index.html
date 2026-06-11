@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Journal App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-nav">
+            <div class="sidebar-header">
+                <h2>📔 Journal</h2>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+
+            <nav class="nav-menu">
+                <ul class="nav-list">
+                    <li>
+                        <button class="nav-item active" data-section="entry">
+                            <span class="nav-icon">✍️</span>
+                            <span class="nav-text">Entry</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-section="logs">
+                            <span class="nav-icon">📋</span>
+                            <span class="nav-text">Logs</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-section="data">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">Data</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-section="calendar">
+                            <span class="nav-icon">📅</span>
+                            <span class="nav-text">Calendar</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-section="backup">
+                            <span class="nav-icon">💾</span>
+                            <span class="nav-text">Backup</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p class="entry-count"><span id="totalEntries">0</span> entries</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <header class="header">
+                <h1>📔 My Journal</h1>
+                <p class="subtitle">Your private space for thoughts and reflections</p>
+            </header>
+
+            <!-- Content Sections -->
+            <main class="main-content">
+
+                <!-- Entry Section -->
+                <section class="content-section active" id="section-entry">
+                    <div class="section-header">
+                        <h2>Create New Entry</h2>
+                    </div>
+
+                    <form id="journalForm" class="journal-form">
+                        <div class="form-group">
+                            <label for="entryTitle">Entry Title</label>
+                            <input 
+                                type="text" 
+                                id="entryTitle" 
+                                placeholder="Give your entry a title..." 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="entryMood">How are you feeling?</label>
+                            <select id="entryMood">
+                                <option value="happy">😊 Happy</option>
+                                <option value="sad">😢 Sad</option>
+                                <option value="anxious">😰 Anxious</option>
+                                <option value="excited">🤩 Excited</option>
+                                <option value="neutral">😐 Neutral</option>
+                                <option value="grateful">🙏 Grateful</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="entryContent">What's on your mind?</label>
+                            <textarea 
+                                id="entryContent" 
+                                placeholder="Write your thoughts here..." 
+                                rows="10"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Entry</button>
+                    </form>
+                </section>
+
+                <!-- Logs Section -->
+                <section class="content-section" id="section-logs">
+                    <div class="section-header">
+                        <h2>All Entries</h2>
+                        <div class="logs-controls">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Search entries..." 
+                                class="search-box"
+                            >
+                            <div class="sort-buttons">
+                                <button class="btn btn-small" id="sortNewest">Newest</button>
+                                <button class="btn btn-small" id="sortOldest">Oldest</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="entries-container">
+                        <div class="entries-list" id="entriesList">
+                            <p class="no-entries">No entries yet. Start writing!</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Section -->
+                <section class="content-section" id="section-data">
+                    <div class="section-header">
+                        <h2>Data Analytics</h2>
+                    </div>
+
+                    <div class="data-container">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Total Entries</h3>
+                                <p class="stat-number" id="statTotalEntries">0</p>
+                            </div>
+
+                            <div class="stat-card">
+                                <h3>This Month</h3>
+                                <p class="stat-number" id="statThisMonth">0</p>
+                            </div>
+
+                            <div class="stat-card">
+                                <h3>This Week</h3>
+                                <p class="stat-number" id="statThisWeek">0</p>
+                            </div>
+
+                            <div class="stat-card">
+                                <h3>This Year</h3>
+                                <p class="stat-number" id="statThisYear">0</p>
+                            </div>
+                        </div>
+
+                        <div class="mood-analytics">
+                            <h3>Mood Distribution</h3>
+                            <div class="mood-chart" id="moodChart">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="word-count">
+                            <h3>Total Words Written</h3>
+                            <p class="word-count-number" id="totalWords">0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Calendar Section -->
+                <section class="content-section" id="section-calendar">
+                    <div class="section-header">
+                        <h2>Calendar View</h2>
+                    </div>
+
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button class="btn btn-small" id="prevMonth">← Prev</button>
+                            <h3 id="currentMonth"></h3>
+                            <button class="btn btn-small" id="nextMonth">Next →</button>
+                        </div>
+
+                        <div class="calendar-grid">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">Sun</div>
+                                <div class="weekday">Mon</div>
+                                <div class="weekday">Tue</div>
+                                <div class="weekday">Wed</div>
+                                <div class="weekday">Thu</div>
+                                <div class="weekday">Fri</div>
+                                <div class="weekday">Sat</div>
+                            </div>
+                            <div class="calendar-dates" id="calendarDates">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="calendar-legend">
+                        <h4>Legend:</h4>
+                        <div class="legend-item">
+                            <span class="legend-color has-entry"></span>
+                            <span>Has Entry</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Backup Section -->
+                <section class="content-section" id="section-backup">
+                    <div class="section-header">
+                        <h2>Backup & Restore</h2>
+                    </div>
+
+                    <div class="backup-container">
+                        <div class="backup-section-card">
+                            <h3>📤 Export Data</h3>
+                            <p>Download all your journal entries as a JSON file for backup or transfer.</p>
+                            <button class="btn btn-primary" id="exportBtn">Export Entries (JSON)</button>
+                            <button class="btn btn-secondary" id="exportCsvBtn">Export Entries (CSV)</button>
+                        </div>
+
+                        <div class="backup-section-card">
+                            <h3>📥 Import Data</h3>
+                            <p>Upload a previously exported JSON file to restore your entries.</p>
+                            <div class="file-input-wrapper">
+                                <input 
+                                    type="file" 
+                                    id="importFile" 
+                                    accept=".json"
+                                    style="display: none;"
+                                >
+                                <button class="btn btn-primary" id="importBtn">Choose File</button>
+                                <p id="importFileName" class="file-name"></p>
+                            </div>
+                        </div>
+
+                        <div class="backup-section-card danger">
+                            <h3>🗑️ Dangerous Zone</h3>
+                            <p>Permanently delete all entries. This action cannot be undone.</p>
+                            <button class="btn btn-danger" id="deleteAllBtn">Delete All Entries</button>
+                        </div>
+
+                        <div class="backup-info">
+                            <h4>ℹ️ Backup Information</h4>
+                            <ul>
+                                <li>Entries are automatically saved to your browser's local storage</li>
+                                <li>Use Export to create a permanent backup on your computer</li>
+                                <li>Use Import to restore from a backup file</li>
+                                <li>Local storage may be cleared if you clear your browser data</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Entry Viewer Modal -->
+    <section class="entry-viewer" id="entryViewer">
+        <div class="entry-viewer-content">
+            <button class="close-btn" id="closeViewer">&times;</button>
+            <article class="entry-display">
+                <h2 id="viewerTitle"></h2>
+                <div class="entry-meta">
+                    <span id="viewerMood"></span>
+                    <span id="viewerDate"></span>
+                </div>
+                <p id="viewerContent"></p>
+                <button class="btn btn-danger" id="deleteEntryBtn">Delete Entry</button>
+            </article>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
